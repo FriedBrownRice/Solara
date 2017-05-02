@@ -1,16 +1,56 @@
 <html>
-
 <head>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-</head>
 <script>
-$(document).ready(function(){
-			
-})
+	$(document).ready(function(){
+		var obj;
+		$.getJSON("data/test.json",function(data){
+			console.log(data);
+			obj = data;
+		})
+		$(".regionButton").click(function(){
+			// $.post("demo_test",
+			// 	{
+			// 		name:$(this).text();
+			// 	},
+			// 	function(data, status){
+			// 		$("#data").append(appendData(data));
+			// 	});
+		});
+	});
+
+	function appendData(data){
+
+	}
+
+	function createEditor(data){
+
+	}
 </script>
 
-<body>
+<style>
+	div {
+		width:33.3%;
+    	height: 100%;
+		float:left;
+	}
+</style>
 
+</head>
+<body>
+	<div id = "nav" class = "div1">
+		<p>model navigator</p>
+		<button class="regionButton">region</button>
+		<button class="regionButton">country</button>
+		<button class="regionButton">state</button>
+		<button class="regionButton">location</button>
+	</div>
+	<div id = "data" class = "div1">
+		<p>Data Entity</p>
+	</div>
+	<div id = "editor" class = "div1">
+		<p>Entity Editor</p>
+	</div>
 </body>
 </html>
 
