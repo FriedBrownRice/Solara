@@ -1,0 +1,9 @@
+[{"country":"China", 
+	"states":["Beijing","Shanghai","Chengdu","Mianyang"]},
+{"country":"Japan", 
+	"states":["Tokyo","Kobe"]},
+{"country":"Britain", 
+	"states":["Londan","Liverpool"]},
+{"country":"United States", 
+	"states":["New York","Caniforlia","New Jersey"]},
+{"country":"Russia", "states":["Moscow"]}]

@@ -1,106 +1,280 @@
 <html>
 <head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<<<<<<< HEAD
-<script>
-	$(document).ready(function(){
-		var obj;
-		$.getJSON("data/test.json",function(data){
-			console.log(data);
-			obj = data;
-		})
-		$(".regionButton").click(function(){
-			// $.post("demo_test",
-			// 	{
-			// 		name:$(this).text();
-			// 	},
-			// 	function(data, status){
-			// 		$("#data").append(appendData(data));
-			// 	});
-		});
-	});
 
-	function appendData(data){
+<!--jQuery dependencies-->
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/themes/base/jquery-ui.css" />  
+   	
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+    
+<!--jstree files-->
+<script src="js/jstree/dist/jstree.min.js"></script>
+<link rel="stylesheet" href="js/jstree/dist/themes/default/style.min.css" />
+<!--PQ Grid files-->
+    <link rel="stylesheet" href="/js/grid/pqgrid.min.css" />
+     <script src="js/grid/pqgrid.min.js"></script>
 
-	}
+<!--PQ Grid Office theme-->
+    <link rel="stylesheet" href="/js/grid/themes/office/pqgrid.css" />
+    <link rel="stylesheet" href="/css/basic.css"/>
 
-	function createEditor(data){
-
-	}
-</script>
-
-<style>
-	div {
-		width:33.3%;
-    	height: 100%;
-		float:left;
-	}
-</style>
-
-</head>
-<body>
-	<div id = "nav" class = "div1">
-		<p>model navigator</p>
-		<button class="regionButton">region</button>
-		<button class="regionButton">country</button>
-		<button class="regionButton">state</button>
-		<button class="regionButton">location</button>
-	</div>
-	<div id = "data" class = "div1">
-		<p>Data Entity</p>
-	</div>
-	<div id = "editor" class = "div1">
-		<p>Entity Editor</p>
-=======
-</head>
 <style>
 	.innerwrap {
-		width:33.3%;
+		width:33%;
 		height:1000px;
 		float:left;
+		border-style:solid;
+		border-width:1px;
 	}
+	input.filterValue{    
+    border:1px solid #aaa;padding:1px 5px;
+    margin:0px 5px;
+}
 </style>
 <script>
 $(document).ready(function(){
-	var country
-	$(".regionButton").click(function(){
-		$.getJSON('data/example.json',function(data){
-			data.forEach(function(d){
-				var editor = $("<a>",{id:d["country"]+"editor",class:"editorType",text:d["country"]});
-				editor.click(function(){
-					console.log($(this).text());
-					$("#elements").append("<p>"+d["country"]+", here we go!</p>");
+	
+	// $.post("query",
+	// 	{
+	// 		"section":"navigator"
+	// 	},
+	// 	createNavigator);
+	$.getJSON("/data/nav.json",createNavigator);
+});
+	// create Data Entity section with pqgrid api.
+	function createEntityT(d){
+		$("#entityTable").remove();
+		var $grid;
+        function filterhandler(evt, ui) {
+
+            var $toolbar = $grid.find('.pq--toolbarsearch'),
+                $value = $toolbar.find(".filterValue"),
+                value = $value.val(),
+                condition = $toolbar.find(".filterCondition").val(),
+                dataIndx = $toolbar.find(".filterColumn").val(),
+                filterObject;
+
+            if (dataIndx == "") {//search through all fields when no field selected.
+                filterObject = [];
+                var CM = $grid.pqGrid("getColModel");
+                for (var i = 0, len = CM.length; i < len; i++) {
+                    var dataIndx = CM[i].dataIndx;
+                    filterObject.push({ dataIndx: dataIndx, condition: condition, value: value });
+                }
+            }
+            else {//search through selected field.
+                filterObject = [{ dataIndx: dataIndx, condition: condition, value: value}];
+            }
+            $grid.pqGrid("filter", {
+                oper: 'replace',
+                data: filterObject
+            });
+        }
+
+	    function filterRender(ui,flg) {
+	        var val = ui.cellData,
+	            filter = ui.column.filter;
+	        if (filter && filter.on && filter.value) {
+	            var condition = filter.condition,
+	                valUpper = val.toUpperCase(),
+	                txt = filter.value,
+	                txt = (txt == null) ? "" : txt.toString(),
+	                txtUpper = txt.toUpperCase(),
+	                indx = -1;
+	            if (condition == "end") {
+	                indx = valUpper.lastIndexOf(txtUpper);
+	                //if not at the end
+	                if (indx + txtUpper.length != valUpper.length) {
+	                    indx = -1;
+	                }
+	            }
+	            else if (condition == "contain") {
+	                indx = valUpper.indexOf(txtUpper);
+	            }
+	            else if (condition == "begin") {
+	                indx = valUpper.indexOf(txtUpper);
+	                //if not at the beginning.
+	                if (indx > 0) {
+	                    indx = -1;
+	                }
+	            }
+	            if (indx >= 0) {
+	                var txt1 = val.substring(0, indx);
+	                var txt2 = val.substring(indx, indx + txt.length);
+	                var txt3 = val.substring(indx + txt.length);
+	                return txt1 + "<span style='background:yellow;color:#333;'>" + txt2 + "</span>" + txt3;
+	            }
+	            else {
+	                return val;
+	            }
+	        }
+	        else {
+	            return val;
+	        }
+	    }
+
+	    function filterRender4Prime(ui){
+
+	    }
+
+
+
+		$("#entityWrap").append("<div id=entityTable style=''margin: auto;></div>");
+		var colM = [];
+		for(var i = 0; i<d["headers"].length; i++){
+			colM.push({ title: d["headers"][i], dataIndx: d["headers"][i], width: 400, render: filterRender });
+		}
+		var dataModel = d["dataModel"];
+		var key = dataModel["recIndx"];
+		for(var i = 0; i < d["content"].length; i++){
+			var cur = d["content"][i][key];
+			d["content"][i][key] = "<a href=# onclick='entityOnClick();return false;'>"+cur+"</a>";
+		}
+        var newObj = {
+            flexHeight: true,
+            flexWidth: true,
+            pageModel: { type: 'local' },
+            dataModel: dataModel,
+            colModel: colM,
+            selectionModel: { type: 'cell', mode: 'single' },
+            filterModel: { mode: 'OR' },
+            toolbar: {
+                cls: "pq-toolbar-search",
+                items: [
+                    { type: "<span style='margin:5px;'>Filter</span>" },
+                    { type: 'textbox', attr: 'placeholder="Enter your keyword"', cls: "filterValue", listeners: [{ 'keyup': filterhandler}] },
+                    { type: 'select', cls: "filterColumn",
+                        listeners: [{ 'change': filterhandler}],
+                        options: function (ui) {
+                            var CM = ui.colModel;
+                            var opts = [{ '': '[ All Fields ]'}];
+                            for (var i = 0; i < CM.length; i++) {
+                                var column = CM[i];
+                                var obj = {};
+                                obj[column.dataIndx] = column.title;
+                                opts.push(obj);
+                            }
+                            return opts;
+                        }
+                    },
+                    { type: 'select', style: "margin:0px 5px;", cls: "filterCondition",
+                        listeners: [{ 'change': filterhandler}],
+                        options: [
+                        { "begin": "Begins With" },
+                        { "contain": "Contains" },
+                        { "end": "Ends With" },
+                        { "notcontain": "Does not contain" },
+                        { "equal": "Equal To" },
+                        { "notequal": "Not Equal To" },
+                        { "empty": "Empty" },
+                        { "notempty": "Not Empty" },
+                        { "less": "Less Than" },
+                        { "great": "Great Than" },
+                        { "regexp": "Regex" }
+                        ]
+                    }
+                ]
+            },
+            cellClick:function (evt,ui){
+            	console.log(evt);
+            	console.log(ui);
+            },
+            editable: false,
+            showTitle: false,
+            columnBorders: true
+        };
+		$grid = $("#entityTable").pqGrid(newObj);
+        $grid.pqGrid("showLoading");
+        $grid.pqGrid("hideLoading");
+        $grid.pqGrid("option", "dataModel.data", d["content"]);
+        $grid.pqGrid("refreshDataAndView");
+	}
+
+	function entityOnClick(){
+	    $.getJSON("/data/test.json", createEditor);
+	}
+
+	// create Entity Editor section 
+	function createEditor(d){
+		//content of d: {name:"string",type:integer,content:string/obj}
+		//possible type in d: 1:input, 2:table, 3:option, 4:link to a new editor.
+
+		$("#editorWrap").
+			append("<div id='entityEditor'>\
+						<form id='editorForm' action=javascript:update></form>\
+					</div>");
+		$("#editorWrap").
+			append("<div id='entityButtonWrap'>\
+						<input form = 'editorForm' class='eidtor-button' type='submit'  value='update'/>\
+						<input form = 'editorForm' class='eidtor-button' type='reset' value='cancel'>\
+					</div>");
+		d.forEach(function (data,i){
+			var id = data["name"]+i;
+			$("#entityEditor").append("<div id ="+id+"></div>");
+			$("#"+id).append("<p class='editor-title-cls'>"+data["name"]+"</p>");
+			switch(data["type"]){
+				case 1://create an input box
+				$("#"+id).append("<input type='text' form ='editorForm' value="+data["content"]+" class='ui-corner-all filterValue' /><br>");
+				break;
+				case 2://create a navie table
+
+				break;
+				case 3://create a select box
+				var opt = $("<select>", {id:"1212", class:"editor-selection", form:"eidtorForm"});
+
+				$("#"+id).append(opt);
+				data["content"]["options"].forEach(function (op){
+					$("#1212").append($("<option>",{value:i,text:op}));
 				});
-				$("#nodes").append(editor);
-			});
-		})
-	});
-})
+				$("#1212").value = data["content"]["selected"];
+				break;
+				case 4://link to a new section
 
-// $(".entityButton").click(function(){
-// 	$("#elements").append("Here we go!");
-// });
+				break;
+		}
+		});
+	}
 
-function entityButtonOnclick(d){
-	console.log(d);
-	// var name = $(this).text();
-	$("#elements").append("<p>"+d+", here we go!</p>");
-}
+	function createNavigator(d){
+		
+		if(d["status"]["isNewIcon"]!=1) loadImgs(d["img"]);
+		$("#navigator").remove();
+		$("#navigatorWrap").append("<div id='navigator'></div>");
+		$("#navigator").jstree({
+			"core":{
+				data:d['content']
+			},
+			"plugins":["contextmenu"]
+		});
+		$("#navigator").on("click",".jstree-anchor",function (){
+			console.log($("#navigator").jstree(true).get_node($(this)).text);
+			//we need a post function here but I just use a getJSON function to get data from local
+
+			$.getJSON('data/entity.json',createEntityT);
+		});
+	}
+
+	function loadImgs(img){}
+
+
+
+
 </script>
-
+</head>
 <body>
 	<div class="wrap">
-		<div id = "dim" class="innerwrap">
-			<button class="regionButton">region</button>
-			<button class="regionButton">country</button>
-			<button class="regionButton">state</button>
-			<button class="regionButton">location</button>
+		<div id = "navigatorWrap" class="innerwrap">
+			<h5>Navigator</h5>
+
+			<!-- <a href="grid/test.html">tst</a> -->
 		</div>
-		<div id = "nodes" class="innerwrap"></div>
-		<div id = "elements" class="innerwrap"></div>
+		<div id = "entityWrap" class="innerwrap">
+			<h5>Data Entity</h5>
+		</div>
+		<div id = "editorWrap" class="innerwrap"><h5>Entity Editor</h5></div>
 
 
->>>>>>> 82df0da5cdf5de496e9870c4a857620d37485309
+
 	</div>
 </body>
 </html>

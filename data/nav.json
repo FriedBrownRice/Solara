@@ -1,0 +1,32 @@
+{
+	"status":{
+		"isNewIcon":1
+	},
+	"content":[{
+		"text":"region",
+		"children":[
+		{
+			"text":"country",
+			"children":[
+				{
+					"text":"state",
+					"children":[{
+						"text":"location",
+						"icon":"/img/fb-icon-11.png"
+					}],
+					"icon":"/img/fb-icon-11.png"
+				},
+				{
+					"text":"province",
+					"children":[{
+						"text":"location",
+						"icon":"/img/fb-icon-11.png"
+					}],
+					"icon":"/img/fb-icon-11.png"
+				}
+			],
+			"icon":"/img/fb-icon-11.png"
+		}],
+		"icon":"/img/fb-icon-11.png"
+	}]
+}
