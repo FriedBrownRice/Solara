@@ -4,19 +4,19 @@
 <!--jQuery dependencies-->
     <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/themes/base/jquery-ui.css" />  
    	
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- dataTable files-->
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.15/css/jquery.dataTables.css">
+  
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.15/js/jquery.dataTables.js"></script>
+
     
 <!--jstree files-->
 <script src="js/jstree/dist/jstree.min.js"></script>
 <link rel="stylesheet" href="js/jstree/dist/themes/default/style.min.css" />
-<!--PQ Grid files-->
-    <link rel="stylesheet" href="/js/grid/pqgrid.min.css" />
-     <script src="js/grid/pqgrid.min.js"></script>
 
-<!--PQ Grid Office theme-->
-    <link rel="stylesheet" href="/js/grid/themes/office/pqgrid.css" />
-    <link rel="stylesheet" href="/css/basic.css"/>
+
 
 <style>
 	.innerwrap {
@@ -32,15 +32,16 @@
 }
 </style>
 <script>
-$(document).ready(function(){
 	
-	// $.post("query",
-	// 	{
-	// 		"section":"navigator"
-	// 	},
-	// 	createNavigator);
-	$.getJSON("/data/nav.json",createNavigator);
-});
+	$(document).ready(function(){
+		var curEditingData = 1;
+			// $.post("query",
+			// 	{
+			// 		"section":"navigator"
+			// 	},
+			// 	createNavigator);
+		$.getJSON("/data/nav.json",createNavigator);
+	
 	// create Data Entity section with pqgrid api.
 	function createEntityT(d){
 		$("#entityTable").remove();
@@ -189,74 +190,248 @@ $(document).ready(function(){
         $grid.pqGrid("option", "dataModel.data", d["content"]);
         $grid.pqGrid("refreshDataAndView");
 	}
+	//create data Entity section with data table
+	function createEntityTwithDT(d){
 
-	function entityOnClick(){
-	    $.getJSON("/data/test.json", createEditor);
+		$("#entityTable_wrapper").remove();
+		$("#entityWrap").append("<table id='entityTable' class='TBD' ></div>");
+		var cols=[], set = new Set(d["primary"]);
+		d["headers"].forEach(function (h,i){
+			if(!set.has(i)){
+				cols.push({
+					title:h,
+					data:i
+				});
+			}else{
+				cols.push({
+					title:h,
+					data:i,
+					"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+						// console.log(sData,oData)
+	            		$(nTd).html("<a href='#'>"+sData+"</a>");
+	            		$(nTd).click(function(){
+	            			//ajax code:
+	            			// $.post('get_data',
+	            			// 	{'name':sData},
+	            			// 	function (data, status){
+	            			// 		createEditor(data);
+	            			// 	});
+	            			//for local test
+	            			$.getJSON('data/test.json',createEditor);
+	            		});
+					}
+				});
+			}
+		});
+		$("#entityTable").DataTable({
+			data:d["content"],
+			page:true,
+			lengthChange:false,
+			fixedHeader:{header:true},
+		    columns: cols
+		    // [
+		    //     { 
+		    //     	title:headers["he"],
+		    //     	data: 'name',
+      //   	        "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+      //       		$(nTd).html("<a href='#'>"+oData.name+"</a>");
+      //       		$(nTd).click(function(){
+      //       			//ajax code:
+      //       			// $.post('get_data',
+      //       			// 	{'name':sData},
+      //       			// 	function (data, status){
+      //       			// 		createEditor(data);
+      //       			// 	});
+
+
+
+      //       			//for local test
+      //       			$.getJSON('data/test.json',createEditor);
+      //       		});
+      //       		// console.log(nTd, sData, oData, iRow, iCol);
+      //   }
+		    // 	},
+		    //     { data: 'position',title:"position"},
+		    //     { data: 'salary' ,title:"salary"},
+		    //     { data: 'office' ,title:"office"}
+	     //    ],
+	   //      fnRowCallback: function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+				// // Row click
+				// $(nRow).on('click', function() {
+				// 	console.log('Row Clicked. Look I have access to all params, thank You closures.', this, aData, iDisplayIndex, iDisplayIndexFull);
+				// });
+
+				// // Cell click
+				// $('td', nRow).on('click', function() {
+				// 	console.log('Col Clicked.', this, aData, iDisplayIndex, iDisplayIndexFull);
+				// 	});
+				// }
+		});
 	}
 
 	// create Entity Editor section 
 	function createEditor(d){
 		//content of d: {name:"string",type:integer,content:string/obj}
 		//possible type in d: 1:input, 2:table, 3:option, 4:link to a new editor.
-
-		$("#editorWrap").
-			append("<div id='entityEditor'>\
-						<form id='editorForm' action=javascript:update></form>\
-					</div>");
-		$("#editorWrap").
+		$("#editor").remove();
+		$("#editorWrap").append("<div id='editor'></div>");
+		$("#editor").
+			append("<div id='entityEditor' class=></div>");
+		$("#editor").
 			append("<div id='entityButtonWrap'>\
-						<input form = 'editorForm' class='eidtor-button' type='submit'  value='update'/>\
-						<input form = 'editorForm' class='eidtor-button' type='reset' value='cancel'>\
+						<button class='eidtor-button' id='editorUpdate'>Update</button>\
+						<button class='eidtor-button' id='editorCancel'>Cancel</button>\
 					</div>");
+
 		d.forEach(function (data,i){
 			var id = data["name"]+i;
 			$("#entityEditor").append("<div id ="+id+"></div>");
 			$("#"+id).append("<p class='editor-title-cls'>"+data["name"]+"</p>");
 			switch(data["type"]){
 				case 1://create an input box
-				$("#"+id).append("<input type='text' form ='editorForm' value="+data["content"]+" class='ui-corner-all filterValue' /><br>");
+				$("#"+id).append("<input type='text' value="+data["content"]+" id='editor'"+i+" class='ui-corner-all filterValue' type=1 idd="+data["id"]+"/><br>");
 				break;
 				case 2://create a navie table
+				var table = $("<table>", {id:"editor"+i, class:"editor-table", type:2, idd:data["id"]});
+				$("#"+id).append(table);
+				var cols = [],  set = new Set(data["content"]["primary"]);
+				data["content"]["headers"].forEach(function (h,i){
+					if(!set.has(i)){
+						cols.push({
+							title:h,
+							data:i
+						});
+					}else{
+						cols.push({
+							title:h,
+							data:i,
+							"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+			            		$(nTd).html("<a href='#'>"+sData+"</a>");
+			            		$(nTd).click(function(){
+			            			//ajax code:
+			            			// $.post('get_data',
+			            			// 	{'name':sData},
+			            			// 	function (data, status){
+			            			// 		createEditor(data);
+			            			// 	});
+			            			//for local test
+			            			$.getJSON('data/test.json',createEditor);
+			            		});
+							}
+						});
+					}
+				});
+				cols.push({
+					data:null,
+					"fnCreatedCell": function (nTd, sData, oData, iRow, iCol){
+			            		$(nTd).html("<a href='#'>delete</a>");
+			            		$(nTd).click(function(){
 
+			            		});
+					}
+				});
+				
+				$("#editor"+i).DataTable({
+						data:data["content"]["content"],
+						searching:false,
+						lengthChange:false,
+						columns:cols
+					});
 				break;
 				case 3://create a select box
-				var opt = $("<select>", {id:"1212", class:"editor-selection", form:"eidtorForm"});
-
+				var opt = $("<select>", {id:"editor"+i, idd:data["id"], class:"editor-selection", type:3});
 				$("#"+id).append(opt);
 				data["content"]["options"].forEach(function (op){
-					$("#1212").append($("<option>",{value:i,text:op}));
+					$("#editor"+i).append($("<option>",{value:i,text:op}));
 				});
-				$("#1212").value = data["content"]["selected"];
+				$("#editor"+i).value = data["content"]["selected"];
 				break;
-				case 4://link to a new section
-
+				case 4://link to its children
+				var link = $("<a>",{id:id, class:"editor-link", type:4, idd:data["id"], Text:data["content"]});
+				$("#entityEditor").append(link);
 				break;
-		}
+			}
 		});
 	}
 
+	// function editorUpdate(){
+
+	// }
+
+	// function editorCancel(){
+
+	// }
+
+	// function 
+
 	function createNavigator(d){
-		
+		console.log(d);
 		if(d["status"]["isNewIcon"]!=1) loadImgs(d["img"]);
 		$("#navigator").remove();
 		$("#navigatorWrap").append("<div id='navigator'></div>");
-		$("#navigator").jstree({
+		var menu = $("#navigator").jstree({
 			"core":{
+				"check_callback":true,
 				data:d['content']
 			},
-			"plugins":["contextmenu"]
+			"plugins":["contextmenu"],
+			contextmenu:{         
+    			"items": 
+    				function ($node) {
+			        var tree = $("#navigator").jstree(true);
+			        return {
+			            "Create": {
+			                "separator_before": false,
+			                "separator_after": false,
+			                "label": "Create",
+			                "action": function (obj) { 
+			                	console.log($node.id);
+			                    $node = tree.create_node($node);
+			                    tree.edit($node);
+			                }
+			            },
+			            "Rename": {
+			                "separator_before": false,
+			                "separator_after": false,
+			                "label": "Rename",
+			                "action": function (obj) { 
+			                    tree.edit($node);
+			                }
+			            },                         
+			            "Remove": {
+			                "separator_before": false,
+			                "separator_after": false,
+			                "label": "Remove",
+			                "action": function (obj) { 
+			                	// $.post(
+			                	// 	"upload_data",
+			                	// 	{
+			                	// 		"operation":"delete",
+			                	// 		"id":$node.id
+			                	// 	},
+			                	// 	function (d,s){
+			                	// 		if (s == "success"){
+			                	// 			tree.delete_node(tree.selected_node());
+			                	// 		}
+			                	// 	});
+								tree.delete_node(tree.get_selected());
+			                }
+			            }
+			        }
+			    }
+			}
 		});
 		$("#navigator").on("click",".jstree-anchor",function (){
-			console.log($("#navigator").jstree(true).get_node($(this)).text);
+			// console.log($("#navigator").jstree(true).get_node($(this)).text);
 			//we need a post function here but I just use a getJSON function to get data from local
+			$.getJSON('data/table.json',createEntityTwithDT);
 
-			$.getJSON('data/entity.json',createEntityT);
 		});
 	}
 
 	function loadImgs(img){}
 
-
+	});
 
 
 </script>
