@@ -1,15 +1,49 @@
 [
     {
-        "name":"name",
-        "type":1,
-        "content":"input"
-    },
+        "name": "name", 
+        "type": 1, 
+        "id":1231123,
+        "content": "input"
+    }, 
     {
-        "name":"fruits",
-        "type":3,
-        "content":{
-            "selected":1,
-            "options":["apple","pear","peach"]
+        "name": "State", 
+        "type": 2, 
+        "id": 12312, 
+        "content": {
+            "primary": [
+                0
+            ], 
+            "headers": [
+                "state"
+            ], 
+            "content": [
+                [
+                    "BeiJing", 
+                ], 
+                [
+                    "Shanghai"
+                ], 
+                [
+                    "Shenzhen"
+                ]
+            ]
         }
+    }, 
+    {
+        "name": "fruits", 
+        "type": 3, 
+        "content": {
+            "selected": "apple", 
+            "options": [
+                "apple", 
+                "pear", 
+                "peach"
+            ]
+        }
+    }, 
+    {
+        "name": "Show its Children", 
+        "type": 4, 
+        "content": "asdas"
     }
 ]

@@ -1,0 +1,32 @@
+post:
+
+url:"load_data"
+
+data:{
+	"operation":"nav","entity","editor","entityUpdate"
+	"content":{
+
+		{
+			"icon":string
+			"children":[obj],
+			"name":string
+		}
+
+		{
+			{
+				"name":string,
+				"value":integer
+			}
+		}
+
+		{
+			[
+				{
+					"type":int,
+					"content":str/obj,
+					"id":int
+				}
+			]
+		}
+	}
+}

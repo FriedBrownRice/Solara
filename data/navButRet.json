@@ -1,0 +1,24 @@
+{
+	"content":
+	[
+		{"country":"China"},
+	    {"country":"Japan"},
+	    {"country":"Britain"},
+	    {"country":"United States"},
+	    {"country":"Russia"}
+	],
+	"headers":
+		[
+			"country"
+		],
+	"dataModel":
+     	{
+            "recIndx": "country",
+            "location": "local",
+            "sorting": "local",
+            "dataType": "JSON",
+            "method": "GET",
+            "sortIndx": "country",
+            "sortDir": "up"
+        }
+}

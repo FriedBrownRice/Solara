@@ -4,23 +4,31 @@
 	},
 	"content":[{
 		"text":"region",
+		"id":1001,
 		"children":[
 		{
 			"text":"country",
+			"id": 1002,
 			"children":[
 				{
 					"text":"state",
+					"id":1003,
 					"children":[{
 						"text":"location",
-						"icon":"/img/fb-icon-11.png"
+						"id":1004,
+						"icon":"/img/fb-icon-11.png",
+						"children":null
 					}],
 					"icon":"/img/fb-icon-11.png"
 				},
 				{
 					"text":"province",
+					"id":1005,
 					"children":[{
 						"text":"location",
-						"icon":"/img/fb-icon-11.png"
+						"id":1006,
+						"icon":"/img/fb-icon-11.png",
+						"children":null
 					}],
 					"icon":"/img/fb-icon-11.png"
 				}
