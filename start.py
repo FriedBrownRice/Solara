@@ -40,4 +40,4 @@ def oper():
 	elif request.form['operation']=='addNode':
 		return jsonify(addNode(request.form['attrs']));
 	elif request.form['operation']=='update':
-		return 1
+		return 'successfully update';

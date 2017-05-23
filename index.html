@@ -203,7 +203,9 @@
 					title:h,
 					data:i,
 					"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-						console.log(nTd);
+						var c = ['te','s','asd','ad'], a = [];
+						a.push(c);
+						console.log(c);
 	            		// $(nTd).html("<a href='#'>"+sData+"</a>");
 	            		// $(nTd).click(function(){
 	            		// 	//ajax code:
@@ -400,7 +402,7 @@
 		$("#navigator").on("click",".jstree-anchor",function (){
 			// console.log($("#navigator").jstree(true).get_node($(this)).text);
 			//we need a post function here but I just use a getJSON function to get data from local
-			$.getJSON('data/table.json',createEntityTwithDT);
+			$.getJSON('data/newTable.json',createEntityTwithDT);
 
 		});
 	}

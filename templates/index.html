@@ -36,7 +36,8 @@
 <script>
 	
 	$(document).ready(function(){
-		var curEditingData = 1;
+		var curID;
+		var editorTracker = [];
 			$.post("test",
 				{
 					operation:"nav"
@@ -269,10 +270,10 @@
 	//create data Entity section with data table
 	function createEntityTwithDT(d){
 
-		$("#entityTable_wrapper").remove();
-
-		$('#entityWrap').append("<div id='entityAddButWrap' class='TBD'>");
-		$("#entityWrap").append("<table id='entityTable' class='TBD' ></div>");
+		$("#entityInnerWrapper").remove();
+		$('#entityWrap').append("<div id='entityInnerWrapper' class='TBD'></div>");
+		$('#entityInnerWrapper').append("<div id='entityAddButWrap' class='TBD'></div>");
+		$("#entityInnerWrapper").append("<table id='entityTable' class='TBD' ></div>");
 		var cols=[], set = new Set(d["primary"]);
 		d["headers"].forEach(function (h,i){
 			if(!set.has(i)){
@@ -316,7 +317,11 @@
 						operation:'edit',
 						data:oData[0]
 					},
-					createEditor)
+					function (d,s){
+						editorTracker = [];
+						curID = oData;
+						createEditor(d);
+					});
 				});
 				delBut = $("<button>", {class:"entity-table-button", text:"delete"});
 				delBut.click(function (){
@@ -349,7 +354,7 @@
 			function (d){
 				t.row.add(['new element',d['id']]).draw();
 			});
-			console.log(id);
+			// console.log(id);
 			
 
 		});
@@ -360,7 +365,7 @@
 	function createEditor(d){
 		//content of d: {name:"string",type:integer,content:string/obj}
 		//possible type in d: 1:input, 2:table, 3:option, 4:link to a new editor.
-		console.log(d);
+		curID = d['id'];
 		$("#editor").remove();
 		$("#editorWrap").append("<div id='editor'></div>");
 		$("#editor").
@@ -370,87 +375,121 @@
 						<button class='eidtor-button' id='editorUpdate'>Update</button>\
 						<button class='eidtor-button' id='editorCancel'>Cancel</button>\
 					</div>");
-
-		d.forEach(function (data,i){
-			var id = data["name"]+i;
+		d['content'].forEach(function (data,i){
+			var id = data["name"]+i, eleID = 'editor'+i;
 			$("#entityEditor").append("<div id ="+id+"></div>");
 			$("#"+id).append("<p class='editor-title-cls'>"+data["name"]+"</p>");
+			
+
 			switch(data["type"]){
 				case 1://create an input box
-				$("#"+id).append("<input type='text' value="+data["content"]+" id='editor'"+i+" class='ui-corner-all filterValue' type=1 idd="+data["id"]+"/><br>");
+				$("#"+id).append("<input type='text' value="+data["content"]['text']+" id="+eleID+" class='ui-corner-all filterValue' type=1 idd="+data["id"]+"/><br>");
+				editorTracker.push([data[0],eleID, data['content']['text'], data['content']['text']]);
+				$('#'+eleID).on('input', function(){
+					console.log($(this).val());
+				})
 				break;
 				case 2://create a navie table
-				var table = $("<table>", {id:"editor"+i, class:"editor-table", type:2, idd:data["id"]});
-				$("#"+id).append(table);
-				var cols = [],  set = new Set(data["content"]["primary"]);
-				data["content"]["headers"].forEach(function (h,i){
-					if(!set.has(i)){
-						cols.push({
-							title:h,
-							data:i
-						});
-					}else{
-						cols.push({
-							title:h,
-							data:i,
-							"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-			            		$(nTd).html("<a href='#'>"+sData+"</a>");
-			            		$(nTd).click(function(){
-			            			//ajax code:
-			            			// $.post('get_data',
-			            			// 	{'name':sData},
-			            			// 	function (data, status){
-			            			// 		createEditor(data);
-			            			// 	});
-			            			//for local test
-			            			$.getJSON('data/test.json',createEditor);
-			            		});
-							}
-						});
-					}
-				});
-				cols.push({
-					data:null,
-					"fnCreatedCell": function (nTd, sData, oData, iRow, iCol){
-			            		$(nTd).html("<a href='#'>delete</a>");
-			            		$(nTd).click(function(){
-
-			            		});
-					}
-				});
-				
-				$("#editor"+i).DataTable({
-						data:data["content"]["content"],
-						searching:false,
-						lengthChange:false,
-						columns:cols
+					var table = $("<table>", {id:eleID, class:"editor-table", type:2, idd:data["id"]});
+					$("#"+id).append(table);
+					var cols = [],  set = new Set(data["content"]["primary"]);
+					data["content"]["headers"].forEach(function (h,i){
+						if(!set.has(i)){
+							cols.push({
+								title:h,
+								data:i
+							});
+						}else{
+							cols.push({
+								title:h,
+								data:i,
+								"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+				            		$(nTd).html("<a href='#'>"+sData+"</a>");
+				            		$(nTd).click(function(){
+				            			//ajax code:
+				            			// $.post('get_data',
+				            			// 	{'name':sData},
+				            			// 	function (data, status){
+				            			// 		createEditor(data);
+				            			// 	});
+				            			//for local test
+				            			$.getJSON('data/test.json',createEditor);
+				            		});
+								}
+							});
+						}
 					});
+					cols.push({
+						data:null,
+						"fnCreatedCell": function (nTd, sData, oData, iRow, iCol){
+				            		$(nTd).html("<a href='#'>delete</a>");
+				            		$(nTd).click(function(){
+
+				            		});
+						}
+					});
+					
+					$("#editor"+i).DataTable({
+							data:data["content"]["content"],
+							searching:false,
+							lengthChange:false,
+							columns:cols
+						});
 				break;
 				case 3://create a select box
-				var opt = $("<select>", {id:"editor"+i, idd:data["id"], class:"editor-selection", type:3});
+				var opt = $("<select>", {id:eleID, idd:data["id"], class:"editor-selection", type:3});
 				$("#"+id).append(opt);
-				data["content"]["options"].forEach(function (op){
-					$("#editor"+i).append($("<option>",{value:i,text:op}));
+				data["content"]["options"].forEach(function (op,ii){
+					$("#editor"+i).append($("<option>",{value:ii,text:op}));
 				});
 				$("#editor"+i).value = data["content"]["selected"];
+				editorTracker.push([data[0],eleID, data['content']['text'], data['content']['selected']]);
+				$('#'+eleID).change(function (){
+					console.log($('#'+$(this).attr('id')+' option:selected').text());
+				})
 				break;
 				case 4://link to its children
-				var link = $("<a>",{id:id, class:"editor-link", type:4, idd:data["id"], Text:data["content"]});
-				$("#entityEditor").append(link);
+				var link = $("<a>",{id:eleID, class:"editor-link", type:4, idd:data["id"], Text:data["content"]});
+				$("#"+id).append(link);
 				break;
 			}
 		});
 	}
 
-	// function editorUpdate(){
+	function editorUpdate(){
+		//editorTracker:[id, domId, original, current]
+		data = [];
+		editorTracker.forEach(function (d,i){
+			if(d[2]!=d[3]) {
+				data.push({
+					node_id:id,
+					oid:d[0],
+					value:d[3]
+				});
+			}
+		});
+		if(data.length){
+			$.post('upload',
+			{
+				operation:update,
+				data:data
+			},function(d){
+				//need to change entity table content if anything showed there was modified
+				alert('Successfully update!');
+			});
+		}else{
+			alert("No data is modified");
+		}
+	}
 
-	// }
+	function editorCancel(){
+		data=[]
+	}
 
-	// function editorCancel(){
+	function editorEleRecover(id,type){
 
-	// }
+	}
 
-	// function 
 
 
 	function loadImgs(img){}
