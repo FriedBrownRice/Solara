@@ -44,6 +44,79 @@
 				createNavigator);
 		// $.getJSON("/data/nav.json",createNavigator);
 	
+	
+	//create navigator
+	function createNavigator(d){
+		console.log(d);
+		if(d["status"]["isNewIcon"]!=1) loadImgs(d["img"]);
+		$("#navigator").remove();
+		$("#navigatorWrap").append("<div id='navigator'></div>");
+		var menu = $("#navigator").jstree({
+			"core":{
+				"check_callback":true,
+				data:d['content']
+			},
+			"plugins":["contextmenu"],
+			contextmenu:{         
+    			"items": 
+    				function ($node) {
+			        var tree = $("#navigator").jstree(true);
+			        return {
+			            "Create": {
+			                "separator_before": false,
+			                "separator_after": false,
+			                "label": "Create",
+			                "action": function (obj) { 
+			                	console.log($node.id);
+			                    $node = tree.create_node($node);
+			                    tree.edit($node);
+			                }
+			            },
+			            "Rename": {
+			                "separator_before": false,
+			                "separator_after": false,
+			                "label": "Rename",
+			                "action": function (obj) { 
+			                    tree.edit($node);
+			                }
+			            },                         
+			            "Remove": {
+			                "separator_before": false,
+			                "separator_after": false,
+			                "label": "Remove",
+			                "action": function (obj) { 
+			                	// $.post(
+			                	// 	"upload_data",
+			                	// 	{
+			                	// 		"operation":"delete",
+			                	// 		"id":$node.id
+			                	// 	},
+			                	// 	function (d,s){
+			                	// 		if (s == "success"){
+			                	// 			tree.delete_node(tree.selected_node());
+			                	// 		}
+			                	// 	});
+								tree.delete_node(tree.get_selected());
+			                }
+			            }
+			        }
+			    }
+			}
+		});
+		$("#navigator").on("click",".jstree-anchor",function (){
+			// console.log($("#navigator").jstree(true).get_node($(this)).text);
+			//we need a post function here but I just use a getJSON function to get data from local
+			$.post('test',
+				{
+					operation:'createT',
+					data:$('#navigator').jstree(true).get_node($(this)).text
+				},
+				createEntityTwithDT
+				);
+
+		});
+	}
+
 	// create Data Entity section with pqgrid api.
 	function createEntityT(d){
 		$("#entityTable").remove();
@@ -192,35 +265,39 @@
         $grid.pqGrid("option", "dataModel.data", d["content"]);
         $grid.pqGrid("refreshDataAndView");
 	}
+
 	//create data Entity section with data table
 	function createEntityTwithDT(d){
 
 		$("#entityTable_wrapper").remove();
+
+		$('#entityWrap').append("<div id='entityAddButWrap' class='TBD'>");
 		$("#entityWrap").append("<table id='entityTable' class='TBD' ></div>");
 		var cols=[], set = new Set(d["primary"]);
 		d["headers"].forEach(function (h,i){
 			if(!set.has(i)){
 				cols.push({
 					title:h,
-					data:i
+					data:i,
+					defaultContent: 'TBD'
 				});
 			}else{
 				cols.push({
 					title:h,
 					data:i,
+
 					"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-						console.log(nTd);
-	            		// $(nTd).html("<a href='#'>"+sData+"</a>");
-	            		// $(nTd).click(function(){
-	            		// 	//ajax code:
-	            		// 	// $.post('get_data',
-	            		// 	// 	{'name':sData},
-	            		// 	// 	function (data, status){
-	            		// 	// 		createEditor(data);
-	            		// 	// 	});
-	            		// 	//for local test
-	            		// 	$.getJSON('data/test.json',createEditor);
-	            		// });
+	            		$(nTd).html("<a href='#'>"+sData+"</a>");
+	            		$(nTd).click(function(){
+
+	            			$.post('test',
+	            				{
+	            					operation:'dive',
+	            					data:sData
+								},
+	            				createEntityTwithDT
+	            				);
+	            		});
 
 						//there will be a bubble!
 					}
@@ -234,19 +311,49 @@
 				console.log(nTd);
 				editBut = $("<button>",{class:"entity-table-button", text: "Edit"});
 				editBut.click(function(){
-					$.getJSON('data/test.json', function(d){console.log(d)});
+					$.post('/test',
+					{
+						operation:'edit',
+						data:oData[0]
+					},
+					createEditor)
 				});
-				detailBut = $("<button>", {class:"entity-table-button", text:"delete"});
-				$(nTd).html("");$(nTd).append(editBut);
+				delBut = $("<button>", {class:"entity-table-button", text:"delete"});
+				delBut.click(function (){
+					$.post('/test',
+					{
+						operation:'delNode',
+						data:oData[0]
+					},function(d){
+						console.log(d);
+					})
+				});
+				$(nTd).html("");$(nTd).append(editBut);$(nTd).append(delBut);
 			}
 		});
-		$("#entityTable").DataTable({
+		var t = $("#entityTable").DataTable({
 			data:d["content"],
 			page:true,
 			lengthChange:false,
 			fixedHeader:{header:true},
 		    columns: cols
 		});
+		var addlink = $("<a>",{id:'table-add-button', class:'TBD', href:'#', text:'add a new row'});
+		addlink.click(function (){
+			var id;
+			$.post('upload',
+			{
+				operation:'addNode',
+				attrs:1
+			},
+			function (d){
+				t.row.add(['new element',d['id']]).draw();
+			});
+			console.log(id);
+			
+
+		});
+		$('#entityAddButWrap').append(addlink);
 	}
 
 	// create Entity Editor section 
@@ -345,70 +452,6 @@
 
 	// function 
 
-	function createNavigator(d){
-		console.log(d);
-		if(d["status"]["isNewIcon"]!=1) loadImgs(d["img"]);
-		$("#navigator").remove();
-		$("#navigatorWrap").append("<div id='navigator'></div>");
-		var menu = $("#navigator").jstree({
-			"core":{
-				"check_callback":true,
-				data:d['content']
-			},
-			"plugins":["contextmenu"],
-			contextmenu:{         
-    			"items": 
-    				function ($node) {
-			        var tree = $("#navigator").jstree(true);
-			        return {
-			            "Create": {
-			                "separator_before": false,
-			                "separator_after": false,
-			                "label": "Create",
-			                "action": function (obj) { 
-			                	console.log($node.id);
-			                    $node = tree.create_node($node);
-			                    tree.edit($node);
-			                }
-			            },
-			            "Rename": {
-			                "separator_before": false,
-			                "separator_after": false,
-			                "label": "Rename",
-			                "action": function (obj) { 
-			                    tree.edit($node);
-			                }
-			            },                         
-			            "Remove": {
-			                "separator_before": false,
-			                "separator_after": false,
-			                "label": "Remove",
-			                "action": function (obj) { 
-			                	// $.post(
-			                	// 	"upload_data",
-			                	// 	{
-			                	// 		"operation":"delete",
-			                	// 		"id":$node.id
-			                	// 	},
-			                	// 	function (d,s){
-			                	// 		if (s == "success"){
-			                	// 			tree.delete_node(tree.selected_node());
-			                	// 		}
-			                	// 	});
-								tree.delete_node(tree.get_selected());
-			                }
-			            }
-			        }
-			    }
-			}
-		});
-		$("#navigator").on("click",".jstree-anchor",function (){
-			// console.log($("#navigator").jstree(true).get_node($(this)).text);
-			//we need a post function here but I just use a getJSON function to get data from local
-			$.getJSON('data/table.json',createEntityTwithDT);
-
-		});
-	}
 
 	function loadImgs(img){}
 

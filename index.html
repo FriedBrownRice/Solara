@@ -35,11 +35,7 @@
 	
 	$(document).ready(function(){
 		var curEditingData = 1;
-			$.post("test",
-				{
-					"operetion":"nav"
-				},
-				createNavigator);
+			$.getJSON('data/nav.json',createNavigator);
 			
 	
 	// create Data Entity section with pqgrid api.
@@ -232,12 +228,9 @@
 				console.log(nTd);
 				editBut = $("<button>",{class:"entity-table-button", text: "Edit"});
 				editBut.click(function(){
-					$.getJSON('data/test.json', function(d){console.log(d)});
+					console.log(nTd, sData, oData, iRow, iCol);
 				});
 				detailBut = $("<button>", {class:"entity-table-button", text:"delete"});
-				editBut.click(function (){
-					$.post()
-				})
 				$(nTd).html("");$(nTd).append(editBut);
 			}
 		});
