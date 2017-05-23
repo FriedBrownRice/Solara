@@ -13,8 +13,10 @@
 
     
 <!--jstree files-->
-<script src="js/jstree/dist/jstree.min.js"></script>
-<link rel="stylesheet" href="js/jstree/dist/themes/default/style.min.css" />
+<!-- <script src="js/jstree/dist/jstree.min.js"></script> -->
+<!-- <link rel="stylesheet" href="js/jstree/dist/themes/default/style.min.css" /> -->
+<script src="{{url_for('static', filename='js/jstree/dist/jstree.min.js')}}"></script> 
+<link rel="stylesheet" href="{{url_for('static', filename='js/jstree/dist/themes/default/style.min.css')}}" />
 
 
 
@@ -37,10 +39,10 @@
 		var curEditingData = 1;
 			$.post("test",
 				{
-					"operetion":"nav"
+					operation:"nav"
 				},
 				createNavigator);
-			
+		// $.getJSON("/data/nav.json",createNavigator);
 	
 	// create Data Entity section with pqgrid api.
 	function createEntityT(d){
@@ -235,9 +237,6 @@
 					$.getJSON('data/test.json', function(d){console.log(d)});
 				});
 				detailBut = $("<button>", {class:"entity-table-button", text:"delete"});
-				editBut.click(function (){
-					$.post()
-				})
 				$(nTd).html("");$(nTd).append(editBut);
 			}
 		});
@@ -252,7 +251,6 @@
 
 	// create Entity Editor section 
 	function createEditor(d){
-		console.log(d);
 		//content of d: {name:"string",type:integer,content:string/obj}
 		//possible type in d: 1:input, 2:table, 3:option, 4:link to a new editor.
 		console.log(d);

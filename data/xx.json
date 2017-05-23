@@ -1,0 +1,74 @@
+[
+    {
+        "id": "100007", 
+        "name": "Shifts", 
+        "levelName": [
+            "Shift"
+        ], 
+        "level": 1
+    }, 
+    {
+        "id": "100000", 
+        "name": "Organisation", 
+        "levelName": [
+            "Division", 
+            "Business Unit", 
+            "Cost Center"
+        ], 
+        "level": 3
+    }, 
+    {
+        "id": "100001", 
+        "name": "Geography", 
+        "levelName": [
+            "Country", 
+            "Location"
+        ], 
+        "level": 2
+    }, 
+    {
+        "id": "100002", 
+        "name": "Device Type", 
+        "levelName": [
+            "Device Class", 
+            "Device Type"
+        ], 
+        "level": 2
+    }, 
+    {
+        "id": "100003", 
+        "name": "Services", 
+        "levelName": [
+            "Service Class", 
+            "Service"
+        ], 
+        "level": 2
+    }, 
+    {
+        "id": "100004", 
+        "name": "Rates", 
+        "levelName": [
+            "Rate"
+        ], 
+        "level": 1
+    }, 
+    {
+        "id": "100005", 
+        "name": "Protocols", 
+        "levelName": [
+            "Base Layer", 
+            "Network Layer", 
+            "Transport Layer", 
+            "Port"
+        ], 
+        "level": 4
+    }, 
+    {
+        "id": "100006", 
+        "name": "Network Centers", 
+        "levelName": [
+            "Network Center"
+        ], 
+        "level": 1
+    }
+]
