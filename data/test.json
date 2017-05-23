@@ -2,7 +2,7 @@
     {
         "name": "name", 
         "type": 1, 
-        "id":1231123,
+        "id": 1231123, 
         "content": "input"
     }, 
     {
@@ -18,7 +18,7 @@
             ], 
             "content": [
                 [
-                    "BeiJing", 
+                    "BeiJing"
                 ], 
                 [
                     "Shanghai"
