@@ -34,6 +34,8 @@
 <script>
 	
 	$(document).ready(function(){
+		var s='asdf111', reg= /\d+/
+		console.log(parseInt('editor1111'.match(reg)[0]));
 		var curEditingData = 1;
 			$.getJSON('data/nav.json',createNavigator);
 			

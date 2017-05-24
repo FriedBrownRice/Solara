@@ -15,7 +15,7 @@
             "type": 3, 
             "id":12312,
             "content": {
-                "selected": "apple", 
+                "selected": 1, 
                 "options": [
                     "apple", 
                     "pear", 

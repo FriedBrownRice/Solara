@@ -372,9 +372,15 @@
 			append("<div id='entityEditor' class=></div>");
 		$("#editor").
 			append("<div id='entityButtonWrap'>\
-						<button class='eidtor-button' id='editorUpdate'>Update</button>\
-						<button class='eidtor-button' id='editorCancel'>Cancel</button>\
+						<button class='eidtor-button' id='editorUpdateButton' >Update</button>\
+						<button class='eidtor-button' id='editorCancelButton' >Cancel</button>\
 					</div>");
+		$('#editorUpdateButton').click(function (){
+			editorUpdate(curID);
+		});
+		$('#editorCancelButton').click(function (){
+			editorCancel();
+		});
 		d['content'].forEach(function (data,i){
 			var id = data["name"]+i, eleID = 'editor'+i;
 			$("#entityEditor").append("<div id ="+id+"></div>");
@@ -383,14 +389,17 @@
 
 			switch(data["type"]){
 				case 1://create an input box
-				$("#"+id).append("<input type='text' value="+data["content"]['text']+" id="+eleID+" class='ui-corner-all filterValue' type=1 idd="+data["id"]+"/><br>");
-				editorTracker.push([data[0],eleID, data['content']['text'], data['content']['text']]);
+				$("#"+id).append("<input type='text' value="+data["content"]['text']+" id="+eleID+" class='ui-corner-all filterValue' idd="+data["id"]+" typevalue=1 /><br>");
+				editorTracker.push([data['id'],eleID, data['content']['text'], data['content']['text']]);
 				$('#'+eleID).on('input', function(){
-					console.log($(this).val());
+					var elementIndex = parseInt($(this).attr('id').match(/\d+/)[0]);
+					console.log(elementIndex);
+					editorTracker[elementIndex][3] = $(this).val();
+					console.log(editorTracker);
 				})
 				break;
 				case 2://create a navie table
-					var table = $("<table>", {id:eleID, class:"editor-table", type:2, idd:data["id"]});
+					var table = $("<table>", {id:eleID, class:"editor-table", type:2, idd:data["id"],'typevalue': 2});
 					$("#"+id).append(table);
 					var cols = [],  set = new Set(data["content"]["primary"]);
 					data["content"]["headers"].forEach(function (h,i){
@@ -437,26 +446,29 @@
 						});
 				break;
 				case 3://create a select box
-				var opt = $("<select>", {id:eleID, idd:data["id"], class:"editor-selection", type:3});
+				var opt = $("<select>", {id:eleID, idd:data["id"], class:"editor-selection", 'typevalue':3});
 				$("#"+id).append(opt);
 				data["content"]["options"].forEach(function (op,ii){
 					$("#editor"+i).append($("<option>",{value:ii,text:op}));
 				});
-				$("#editor"+i).value = data["content"]["selected"];
-				editorTracker.push([data[0],eleID, data['content']['text'], data['content']['selected']]);
+				$("#editor"+i).val(data["content"]["selected"]);
+				editorTracker.push([data['id'],eleID, data['content']['selected'], data['content']['selected']]);
 				$('#'+eleID).change(function (){
-					console.log($('#'+$(this).attr('id')+' option:selected').text());
+					var elementIndex = parseInt($(this).attr('id').match(/\d+/)[0]);
+					// editorTracker[elementIndex][3] = $('#'+$(this).attr('id')+' option:selected').text();
+					editorTracker[elementIndex][3] = $(this).val();
+					console.log(editorTracker);
 				})
 				break;
 				case 4://link to its children
-				var link = $("<a>",{id:eleID, class:"editor-link", type:4, idd:data["id"], Text:data["content"]});
+				var link = $("<a>",{id:eleID, class:"editor-link", 'typevalue':4, idd:data["id"], Text:data["content"]});
 				$("#"+id).append(link);
 				break;
 			}
 		});
 	}
 
-	function editorUpdate(){
+	function editorUpdate(id){
 		//editorTracker:[id, domId, original, current]
 		data = [];
 		editorTracker.forEach(function (d,i){
@@ -471,11 +483,17 @@
 		if(data.length){
 			$.post('upload',
 			{
-				operation:update,
+				operation:"update",
 				data:data
-			},function(d){
+			},function(d,s){
 				//need to change entity table content if anything showed there was modified
-				alert('Successfully update!');
+				if(s=='success') {
+					alert('Successfully update!');
+					var trackerLength = editorTracker.length;
+					for(var i = 0; i <trackerLength; i++){
+						editorTracker[i][2] = editorTracker[i][3];
+					}
+				}
 			});
 		}else{
 			alert("No data is modified");
@@ -483,11 +501,12 @@
 	}
 
 	function editorCancel(){
-		data=[]
-	}
-
-	function editorEleRecover(id,type){
-
+		editorTracker.forEach(function (d,i){
+			var id = 'editor'+i;
+			var type = $('#'+id).attr('typevalue');
+			if(type==1||type==3)
+				 $('#'+id).val(d[2]);
+		})
 	}
 
 
