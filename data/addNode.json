@@ -1,23 +1,39 @@
 {
-    "id":1111,
-    "content":
+	"id":1111,
+	"level":3,
+	"path":[
+		{
+			"name":"region",
+			"selected":"None",
+			"options":["Mars","Earch","Moon"]
+		},
+		{
+			"name":"Country",
+			"selected":"None",
+			"options":[]
+		}
+	],
+	"content":
     [
+    	{
+    		"name":"region",
+    		"type":3,
+    		""
+    	}
         {
             "name": "name", 
             "type": 1, 
-            "id": 1231123,
-            "attrid":12121,
+            "id": 1231123, 
             "content": {
-                "value":"input"
+                "text":"input"
             }
         }, 
         {
             "name": "fruits", 
             "type": 3, 
             "id":12312,
-            "attrid":12121,
             "content": {
-                "value": "apple", 
+                "selected": "apple", 
                 "options": [
                     "apple", 
                     "pear", 

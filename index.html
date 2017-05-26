@@ -34,8 +34,6 @@
 <script>
 	
 	$(document).ready(function(){
-		var s='asdf111', reg= /\d+/
-		console.log(parseInt('editor1111'.match(reg)[0]));
 		var curEditingData = 1;
 			$.getJSON('data/nav.json',createNavigator);
 			
@@ -205,11 +203,9 @@
 					title:h,
 					data:i,
 					"fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
-						var c = ['te','s','asd','ad'], a = [];
-						a.push(c);
-						console.log(c);
-	            		// $(nTd).html("<a href='#'>"+sData+"</a>");
-	            		// $(nTd).click(function(){
+
+	            		$(nTd).html("<a href='#'>"+sData+"</a>");
+	            		$(nTd).click(function(){
 	            		// 	//ajax code:
 	            		// 	// $.post('get_data',
 	            		// 	// 	{'name':sData},
@@ -217,9 +213,8 @@
 	            		// 	// 		createEditor(data);
 	            		// 	// 	});
 	            		// 	//for local test
-	            		// 	$.getJSON('data/test.json',createEditor);
-	            		// });
-
+	            			$.getJSON('data/editor.json',createEditor);
+	            		});
 						//there will be a bubble!
 					}
 				});
@@ -252,7 +247,7 @@
 		console.log(d);
 		//content of d: {name:"string",type:integer,content:string/obj}
 		//possible type in d: 1:input, 2:table, 3:option, 4:link to a new editor.
-		console.log(d);
+
 		$("#editor").remove();
 		$("#editorWrap").append("<div id='editor'></div>");
 		$("#editor").
@@ -263,13 +258,13 @@
 						<button class='eidtor-button' id='editorCancel'>Cancel</button>\
 					</div>");
 
-		d.forEach(function (data,i){
+		d['content'].forEach(function (data,i){
 			var id = data["name"]+i;
 			$("#entityEditor").append("<div id ="+id+"></div>");
 			$("#"+id).append("<p class='editor-title-cls'>"+data["name"]+"</p>");
 			switch(data["type"]){
 				case 1://create an input box
-				$("#"+id).append("<input type='text' value="+data["content"]+" id='editor'"+i+" class='ui-corner-all filterValue' type=1 idd="+data["id"]+"/><br>");
+				$("#"+id).append("<input type='text' value="+data["content"]['value']+" id='editor'"+i+" class='ui-corner-all filterValue' type=1 idd="+data["id"]+"/><br>");
 				break;
 				case 2://create a navie table
 				var table = $("<table>", {id:"editor"+i, class:"editor-table", type:2, idd:data["id"]});
@@ -320,11 +315,12 @@
 				break;
 				case 3://create a select box
 				var opt = $("<select>", {id:"editor"+i, idd:data["id"], class:"editor-selection", type:3});
-				$("#"+id).append(opt);
+				
 				data["content"]["options"].forEach(function (op){
-					$("#editor"+i).append($("<option>",{value:i,text:op}));
+					opt.append($("<option>",{value:op,text:op}));
 				});
-				$("#editor"+i).value = data["content"]["selected"];
+				$("#"+id).append(opt);
+				$("#editor"+i).value = data["content"]["value"];
 				break;
 				case 4://link to its children
 				var link = $("<a>",{id:id, class:"editor-link", type:4, idd:data["id"], Text:data["content"]});

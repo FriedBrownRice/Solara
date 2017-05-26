@@ -318,8 +318,8 @@
 						data:oData[0]
 					},
 					function (d,s){
-						editorTracker = [];
-						curID = oData;
+						// editorTracker = [];
+						// curID = oData;
 						createEditor(d);
 					});
 				});
@@ -352,9 +352,9 @@
 				attrs:1
 			},
 			function (d){
-				t.row.add(['new element',d['id']]).draw();
+				// t.row.add(['new element',d['id']]).draw();
+				$.post('get')
 			});
-			// console.log(id);
 			
 
 		});
@@ -365,7 +365,8 @@
 	function createEditor(d){
 		//content of d: {name:"string",type:integer,content:string/obj}
 		//possible type in d: 1:input, 2:table, 3:option, 4:link to a new editor.
-		curID = d['id'];
+		// curID = d['id'];
+		editorTracker = [];
 		$("#editor").remove();
 		$("#editorWrap").append("<div id='editor'></div>");
 		$("#editor").
@@ -385,18 +386,15 @@
 			var id = data["name"]+i, eleID = 'editor'+i;
 			$("#entityEditor").append("<div id ="+id+"></div>");
 			$("#"+id).append("<p class='editor-title-cls'>"+data["name"]+"</p>");
-			
-
+			editorTracker.push([d['id'],data['id'], data['attrid'], data['content']['value']]);
 			switch(data["type"]){
 				case 1://create an input box
-				$("#"+id).append("<input type='text' value="+data["content"]['text']+" id="+eleID+" class='ui-corner-all filterValue' idd="+data["id"]+" typevalue=1 /><br>");
-				editorTracker.push([data['id'],eleID, data['content']['text'], data['content']['text']]);
-				$('#'+eleID).on('input', function(){
-					var elementIndex = parseInt($(this).attr('id').match(/\d+/)[0]);
-					console.log(elementIndex);
-					editorTracker[elementIndex][3] = $(this).val();
-					console.log(editorTracker);
-				})
+				$("#"+id).append("<input type='text' value="+data["content"]['value']+" id="+eleID+" class='ui-corner-all filterValue' idd="+data["id"]+" typevalue=1 /><br>");
+				
+				// $('#'+eleID).on('input', function(){
+				// 	var elementIndex = parseInt($(this).attr('id').match(/\d+/)[0]);
+				// 	editorTracker[elementIndex][3] = $(this).val();
+				// });
 				break;
 				case 2://create a navie table
 					var table = $("<table>", {id:eleID, class:"editor-table", type:2, idd:data["id"],'typevalue': 2});
@@ -448,17 +446,15 @@
 				case 3://create a select box
 				var opt = $("<select>", {id:eleID, idd:data["id"], class:"editor-selection", 'typevalue':3});
 				$("#"+id).append(opt);
-				data["content"]["options"].forEach(function (op,ii){
-					$("#editor"+i).append($("<option>",{value:ii,text:op}));
+				data["content"]["options"].forEach(function (op){
+					$("#editor"+i).append($("<option>",{value:op,text:op}));
 				});
-				$("#editor"+i).val(data["content"]["selected"]);
-				editorTracker.push([data['id'],eleID, data['content']['selected'], data['content']['selected']]);
-				$('#'+eleID).change(function (){
-					var elementIndex = parseInt($(this).attr('id').match(/\d+/)[0]);
-					// editorTracker[elementIndex][3] = $('#'+$(this).attr('id')+' option:selected').text();
-					editorTracker[elementIndex][3] = $(this).val();
-					console.log(editorTracker);
-				})
+				$("#editor"+i).val(data["content"]["value"]);
+				// $('#'+eleID).change(function (){
+				// 	var elementIndex = parseInt($(this).attr('id').match(/\d+/)[0]);
+				// 	editorTracker[elementIndex][3] = $(this).val();
+				// 	console.log(editorTracker);
+				// })
 				break;
 				case 4://link to its children
 				var link = $("<a>",{id:eleID, class:"editor-link", 'typevalue':4, idd:data["id"], Text:data["content"]});
@@ -468,15 +464,100 @@
 		});
 	}
 
-	function editorUpdate(id){
+	// create Add section in #editorwrap
+	function createAddSection(d,flag){
+		//flag 1:has a parent; 2:has no parent right now.
+		editorTracker = [];
+		var i = 0, lvl = d['level'];
+		$('#editor').remove();
+		$('#editorWrap').append("<div id='editor'><div>");
+		$('#editor').append("<div id='dropdownSection'></div>\
+							<div id='editorSection'></div>\
+							<div id='buttonSection'></div>");
+		$('#buttonSection').append("<button id = 'addButton' class='editro-button'>Add</button>\
+									<button id = 'cancelButton' class='editro-button'>Cancel</button>");
+		$('#editorUpdateButton').click(function(){
+			editorAdd(lvl);
+		});
+		$('#editorCancelButton').click(function (){
+			$('#editor').remove();
+		});
+		d['path'].forEach(function (e,i){
+			var eleID = 'dropdown'+i,id = 'dropdownWrap'+i;
+
+			$("#"+id).append("<p class='editor-title-cls'>"+e["name"]+"</p>");
+			var opt = $("<select>", {id:eleID, class:"editor-selection"});
+			if(flag==1){
+				opt.prop('disable', true);
+			}else{
+				opt.change(function(){
+					$.post('upload',
+						{
+							operation:'dive',
+							data:{
+								{
+									modelid:111,
+									lvl:111,
+									node_id:111
+								}
+							}
+						},function(d,s){
+							if(s=='success'){
+								console.log($(this).attr('id'));
+							}else{
+								alert('unsuccessfully dive');
+							}
+						});
+				})
+			}
+			data["content"]["options"].forEach(function (op){
+				opt.append($("<option>",{value:op,text:op}));
+			});
+			$('#'+eleID).val(e["selected"]);
+
+			$("#"+id).append(opt);
+		});
+		d['content'].forEach(function (data,i)){
+			var id = data['name']+i, eleID = 'editor'+i;
+			$("#entityEditor").append("<div id ="+id+"></div>");
+			$("#"+id).append("<p class='editor-title-cls'>"+data["name"]+"</p>");
+			switch(data['type']){
+				case 1://create an input box
+				$("#"+id).append("<input type='text' value="+data["content"]['text']+" id="+eleID+" class='ui-corner-all filterValue' idd="+data["id"]+" typevalue=1 /><br>");
+				editorTracker.push([data['id'],eleID, data['content']['text'], data['content']['text']]);
+				$('#'+eleID).on('input', function(){
+					var elementIndex = parseInt($(this).attr('id').match(/\d+/)[0]);
+					editorTracker[elementIndex][3] = $(this).val();
+				})
+				break;
+				case 3://create a select box
+					var opt = $("<select>", {id:eleID, idd:data["id"], class:"editor-selection", 'typevalue':3});
+					$("#"+id).append(opt);
+					data["content"]["options"].forEach(function (op,ii){
+						$("#editor"+i).append($("<option>",{value:op,text:op}));
+					});
+					$("#editor"+i).val(data["content"]["selected"]);
+					editorTracker.push([data['id'],eleID, data['content']['selected'], data['content']['selected']]);
+					$('#'+eleID).change(function (){
+					})
+				break;
+			}
+		}
+	}
+
+	// update editor onclick function; 
+	function editorUpdate(){
 		//editorTracker:[id, domId, original, current]
 		data = [];
 		editorTracker.forEach(function (d,i){
-			if(d[2]!=d[3]) {
+			var v = $("#editor"+i).val();
+			if(d[2]!=v) {
 				data.push({
-					node_id:id,
-					oid:d[0],
-					value:d[3]
+					node_id:d[0],
+					id:d[1],
+					attrid:d[2],
+					type:$("#editor"+i).attr('typevalue'),
+					value:$("#editor"+i).val()
 				});
 			}
 		});
@@ -491,7 +572,7 @@
 					alert('Successfully update!');
 					var trackerLength = editorTracker.length;
 					for(var i = 0; i <trackerLength; i++){
-						editorTracker[i][2] = editorTracker[i][3];
+						editorTracker[i][3] = $('#editor'+i).val();
 					}
 				}
 			});
@@ -500,6 +581,7 @@
 		}
 	}
 
+	// Cancel changes happened in editor 
 	function editorCancel(){
 		editorTracker.forEach(function (d,i){
 			var id = 'editor'+i;
@@ -507,6 +589,10 @@
 			if(type==1||type==3)
 				 $('#'+id).val(d[2]);
 		})
+	}
+
+	function editorAdd(lvl){
+
 	}
 
 
