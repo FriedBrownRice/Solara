@@ -1,11 +1,12 @@
 {
 	"id":1111,
-	"level":3,
+	"level":2,
+    "hasParent":1,
 	"path":[
 		{
 			"name":"region",
-			"selected":"None",
-			"options":["Mars","Earch","Moon"]
+			"selected":-1,
+			"options":[{"name":"Mars","id":1},{"name":"Earch","id":2},{"name":"Moon","id":3}]
 		},
 		{
 			"name":"Country",
@@ -15,11 +16,7 @@
 	],
 	"content":
     [
-    	{
-    		"name":"region",
-    		"type":3,
-    		""
-    	}
+
         {
             "name": "name", 
             "type": 1, 

@@ -2,23 +2,17 @@
 	"content":[
 		[
 	        "Tiger Nixon",
-	        "System Architect",
-	        "Edinburgh",
-	        "$3,120"
+	        122
 	    ],
 	    [
 	        "Garrett Winters",
-	        "Director",
-	        "Edinburgh",
-	        "$5,300"
+	        123
 	    ]
 	],
 	"headers":[
-		"Name",
-		"Position",
-		"Location",
-		"Salary"
+		"Name"
 	],
-
+	"modelid":111,
+	"lvl":1,
 	"primary":[0]
 }
