@@ -36,11 +36,12 @@
 <script>
 	
 	$(document).ready(function(){
-		var curID;
+		var curTablehasParent;
 		var editorTracker = [];
-			$.post("test",
+			$.post("/test",
 				{
-					operation:"nav"
+					operation:"nav",
+					name:000
 				},
 				createNavigator);
 		// $.getJSON("/data/nav.json",createNavigator);
@@ -110,10 +111,13 @@
 			$.post('test',
 				{
 					operation:'createT',
+					name:$('#navigator').jstree(true).get_node($(this)).text,
 					data:$('#navigator').jstree(true).get_node($(this)).text
 				},
-				createEntityTwithDT
-				);
+				function (d,s){
+					curTablehasParent = 0;
+					createEntityTwithDT(d);
+				});
 
 		});
 	}
@@ -268,7 +272,7 @@
 	}
 
 	//create data Entity section with data table
-	function createEntityTwithDT(d){
+	function createEntityTwithDT(d,flag){
 
 		$("#entityInnerWrapper").remove();
 		$('#entityWrap').append("<div id='entityInnerWrapper' class='TBD'></div>");
@@ -294,9 +298,13 @@
 	            			$.post('test',
 	            				{
 	            					operation:'dive',
+	            					name:sData,
 	            					data:sData
 								},
-	            				createEntityTwithDT
+	            				function (d,s){
+	            					curTablehasParent = 1;
+	            					createEntityTwithDT(d);
+	            				}
 	            				);
 	            		});
 
@@ -315,7 +323,8 @@
 					$.post('/test',
 					{
 						operation:'edit',
-						data:oData[0]
+						data:oData[0],
+						name:oData[0],
 					},
 					function (d,s){
 						// editorTracker = [];
@@ -328,9 +337,14 @@
 					$.post('/test',
 					{
 						operation:'delNode',
-						data:oData[0]
-					},function(d){
-						console.log(d);
+						name:oData[0],
+						data:JSON.stringify({
+							nodeid:oData[0],
+							modelid:d['modelid'],
+							lvl:d['lvl']
+						})
+					},function (d,s){
+						if(s=='success') $(nTd).parent().remove();
 					})
 				});
 				$(nTd).html("");$(nTd).append(editBut);$(nTd).append(delBut);
@@ -349,11 +363,12 @@
 			$.post('upload',
 			{
 				operation:'addNode',
-				attrs:1
+				attrs:1,
+				hasParent:curTablehasParent
 			},
 			function (d){
 				// t.row.add(['new element',d['id']]).draw();
-				$.post('get')
+				createAddSection(d);
 			});
 			
 
@@ -377,7 +392,7 @@
 						<button class='eidtor-button' id='editorCancelButton' >Cancel</button>\
 					</div>");
 		$('#editorUpdateButton').click(function (){
-			editorUpdate(curID);
+			editorUpdate();
 		});
 		$('#editorCancelButton').click(function (){
 			editorCancel();
@@ -465,8 +480,10 @@
 	}
 
 	// create Add section in #editorwrap
-	function createAddSection(d,flag){
-		//flag 1:has a parent; 2:has no parent right now.
+	function createAddSection(d){
+		console.log(d);
+		flag = d["hasParent"];
+		//flag 0:has a parent; 1:has no parent right now.
 		editorTracker = [];
 		var i = 0, lvl = d['level'];
 		$('#editor').remove();
@@ -476,50 +493,69 @@
 							<div id='buttonSection'></div>");
 		$('#buttonSection').append("<button id = 'addButton' class='editro-button'>Add</button>\
 									<button id = 'cancelButton' class='editro-button'>Cancel</button>");
-		$('#editorUpdateButton').click(function(){
+		$('#addButton').click(function(){
 			editorAdd(lvl);
 		});
-		$('#editorCancelButton').click(function (){
+		$('#cancelButton').click(function (){
 			$('#editor').remove();
 		});
 		d['path'].forEach(function (e,i){
 			var eleID = 'dropdown'+i,id = 'dropdownWrap'+i;
-
+			$('#dropdownSection').append("<div id="+id+"></div>");
 			$("#"+id).append("<p class='editor-title-cls'>"+e["name"]+"</p>");
 			var opt = $("<select>", {id:eleID, class:"editor-selection"});
-			if(flag==1){
-				opt.prop('disable', true);
-			}else{
-				opt.change(function(){
-					$.post('upload',
-						{
-							operation:'dive',
-							data:{
-								{
-									modelid:111,
-									lvl:111,
-									node_id:111
-								}
-							}
-						},function(d,s){
-							if(s=='success'){
-								console.log($(this).attr('id'));
-							}else{
-								alert('unsuccessfully dive');
-							}
-						});
-				})
-			}
-			data["content"]["options"].forEach(function (op){
-				opt.append($("<option>",{value:op,text:op}));
+			if(e['options'].length) opt.append($("<option>",{value:-1,text:'Choose one'}));
+			e["options"].forEach(function (op){
+				opt.append($("<option>",{value:op['id'],text:op['name']}));
 			});
 			$('#'+eleID).val(e["selected"]);
 
 			$("#"+id).append(opt);
+			if(flag==1){
+				// console.log('disable it!!');
+				$('#'+eleID).prop('disabled', 'disabled');
+			}else{
+				$('#'+eleID).change(function(){
+					if($(this).val()!=-1){
+						$.post('upload',
+							{
+								operation:'dive',
+								data:JSON.stringify({
+										modelid:d['modelid'],
+										lvl:i+1,
+										node_id:$(this).val(),
+										eleID:i
+								})
+							},function (d,s){
+								if(s=='success'){
+									if(d['eleID']+1 < lvl){
+										$('#dropdown'+(d['eleID']+1)).append($('<option>', {id:'dropdown'+(d['eleID']+1)+'optionBasic',text:'Choose one', value:-1}));
+										d['options'].forEach(function (da,ii){
+											$('#dropdown'+(d['eleID']+1)).append($('<option>',{id:'dropdown'+(d['eleID']+1)+'option'+ii, text:da['name'], value:da['id']}));
+										})
+										$('#dropdown'+(d['eleID']+1)).val(d['value']);
+									}
+								}else{
+									alert('unsuccessfully dive');
+								}
+							});
+					}else{
+						$('option')
+						.filter(function (){
+							var reg = 'dropdown'+(i+1)+'option*';
+							var re = new RegExp(reg,'g');
+							return this.id.match(re);
+						})
+						.remove();
+						$('#dropdown'+i).val(-1);
+					}
+				})
+			}
+
 		});
-		d['content'].forEach(function (data,i)){
+		d['content'].forEach(function (data,i){
 			var id = data['name']+i, eleID = 'editor'+i;
-			$("#entityEditor").append("<div id ="+id+"></div>");
+			$("#editorSection").append("<div id ="+id+"></div>");
 			$("#"+id).append("<p class='editor-title-cls'>"+data["name"]+"</p>");
 			switch(data['type']){
 				case 1://create an input box
@@ -542,7 +578,7 @@
 					})
 				break;
 			}
-		}
+		});
 	}
 
 	// update editor onclick function; 
@@ -587,12 +623,54 @@
 			var id = 'editor'+i;
 			var type = $('#'+id).attr('typevalue');
 			if(type==1||type==3)
-				 $('#'+id).val(d[2]);
-		})
+				 $('#'+id).val(d[3]);
+		});
 	}
 
 	function editorAdd(lvl){
+		//update path:
+		console.log(lvl);
+		var parent;
+		for(var i = 0; i < lvl; i++){
+			if($('#dropdown'+i).val()==-1) {
+				alert('invalid add operation!!');
+				return;
+			}
+		}
+		parent = $('#dropdown'+(lvl-1)).val();
 
+		//update attr:
+		data = [];
+		editorTracker.forEach(function (d,i){
+			var v = $("#editor"+i).val();
+			if(d[2]!=v) {
+				data.push({
+					node_id:d[0],
+					id:d[1],
+					attrid:d[2],
+					type:$("#editor"+i).attr('typevalue'),
+					value:$("#editor"+i).val()
+				});
+			}
+		});
+		if(data.length){
+			$.post('upload',
+			{
+				operation:"insertNode",
+				parent:parent,
+				data:data
+			},function(d,s){
+				//need to change entity table content if anything showed there was modified
+				if(s=='success') {
+					$('#entityTable').DataTable().row.add(d).draw();
+					$('#editor').remove();
+				}else{
+					alert('bad insertion!!');
+				}
+			});
+		}else{
+			alert("No data is modified");
+		}
 	}
 
 

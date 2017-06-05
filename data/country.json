@@ -1,0 +1,12 @@
+{
+	"modelid":1,
+	"lvl":1,
+	"primary":[0],
+	"headers":["Country"],
+	"content":[
+		["China", 1001],
+		["Russia", 1002],
+		["USA", 1003],
+		["Britain", 1201]
+	]
+}

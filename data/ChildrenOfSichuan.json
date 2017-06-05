@@ -1,0 +1,12 @@
+{
+	"modelid":1,
+	"lvl":1,
+	"primary":[0],
+	"headers":["Location"],
+	"content":[
+		["Chengdu", 1001],
+		["Mianyang", 1002],
+		["Suining", 1003],
+		["Nanchong", 1201]
+	]
+}

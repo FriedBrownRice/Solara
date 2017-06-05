@@ -1,0 +1,12 @@
+{
+	"modelid":1,
+	"lvl":1,
+	"primary":[0],
+	"headers":["Country"],
+	"content":[
+		["Sichuan", 1001],
+		["Shanghai", 1002],
+		["Beijing", 1003],
+		["Shenzhen", 1201]
+	]
+}
